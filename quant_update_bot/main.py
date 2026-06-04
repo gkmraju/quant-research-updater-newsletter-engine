@@ -3,15 +3,26 @@
 from __future__ import annotations
 
 import argparse
+from dataclasses import dataclass
 from pathlib import Path
 import sys
 import time
 
 from quant_update_bot.delivery import deliver_digest
+from quant_update_bot.env import load_dotenv
 from quant_update_bot.arxiv_source import fetch_recent_papers
 from quant_update_bot.config import AppConfig
 from quant_update_bot.digest import rank_papers, select_digest_items, write_digest
+from quant_update_bot.publish import PublicationArtifacts, render_publication
 from quant_update_bot.store import StateStore
+
+
+@dataclass(slots=True)
+class RunArtifacts:
+    """Artifacts produced by one digest run."""
+
+    markdown_path: Path
+    publication: PublicationArtifacts | None
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -43,6 +54,12 @@ def build_parser() -> argparse.ArgumentParser:
         default=None,
         help="Optional email subject when using --deliver email or both.",
     )
+    parser.add_argument(
+        "--publication",
+        choices=("none", "html", "pdf", "both"),
+        default="both",
+        help="Branded publication artifacts to render alongside markdown.",
+    )
     return parser
 
 
@@ -51,7 +68,7 @@ def run(
     output_path: str | None = None,
     *,
     include_seen: bool = False,
-) -> Path:
+) -> tuple[Path, list]:
     """Execute one digest run and return the output path."""
     config = AppConfig.from_file(config_path)
     papers = []
@@ -84,23 +101,42 @@ def run(
         destination,
         include_seen=include_seen,
     )
-    return destination
+    return destination, digest_items
 
 
 def main() -> None:
     """Console-script entrypoint."""
+    load_dotenv()
     parser = build_parser()
     args = parser.parse_args()
-    output_path = run(
+    output_path, digest_items = run(
         args.config,
         args.output,
         include_seen=args.include_seen,
     )
+    publication: PublicationArtifacts | None = None
+    if args.publication != "none":
+        publication = render_publication(
+            digest_items,
+            output_base=output_path.with_suffix(""),
+            include_seen=args.include_seen,
+        )
+        if args.publication == "html":
+            publication = PublicationArtifacts(
+                html_path=publication.html_path,
+                pdf_path=None,
+            )
+        elif args.publication == "pdf":
+            publication = PublicationArtifacts(
+                html_path=publication.html_path,
+                pdf_path=publication.pdf_path,
+            )
     if args.deliver != "none":
         delivered = deliver_digest(
             output_path,
             channel=args.deliver,
             subject=args.subject,
+            pdf_path=None if publication is None else publication.pdf_path,
         )
         print(f"Delivered to: {', '.join(delivered)}", file=sys.stderr)
     print(output_path)
