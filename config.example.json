@@ -1,0 +1,32 @@
+{
+  "lookback_days": 7,
+  "max_digest_items": 8,
+  "output_dir": "output",
+  "state_db": ".data/quant_updates.sqlite3",
+  "queries": [
+    {
+      "name": "factor investing",
+      "query": "all:\"factor investing\" OR all:\"cross-sectional returns\"",
+      "max_results": 10,
+      "weight": 1.0
+    },
+    {
+      "name": "market microstructure",
+      "query": "all:\"market microstructure\" OR all:\"limit order book\"",
+      "max_results": 10,
+      "weight": 1.0
+    },
+    {
+      "name": "llm in finance",
+      "query": "all:\"llm finance\" OR all:\"large language model finance\"",
+      "max_results": 10,
+      "weight": 1.0
+    }
+  ],
+  "topic_keywords": {
+    "alpha": ["alpha", "factor", "anomaly", "momentum", "value"],
+    "execution": ["execution", "microstructure", "order book", "market impact"],
+    "risk": ["risk", "volatility", "drawdown", "tail", "liquidity"],
+    "llm": ["llm", "large language model", "retrieval", "rag", "chatgpt"]
+  }
+}
