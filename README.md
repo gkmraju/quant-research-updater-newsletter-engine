@@ -1,4 +1,4 @@
-# QuantNews Updater
+# Quant News Updater
 
 QuantNews Updater is a lightweight quant research monitor that polls arXiv,
 tracks what is new, ranks papers by your interests, and turns them into a
