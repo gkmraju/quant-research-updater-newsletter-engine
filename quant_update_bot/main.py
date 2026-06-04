@@ -7,6 +7,7 @@ from pathlib import Path
 import sys
 import time
 
+from quant_update_bot.delivery import deliver_digest
 from quant_update_bot.arxiv_source import fetch_recent_papers
 from quant_update_bot.config import AppConfig
 from quant_update_bot.digest import rank_papers, select_digest_items, write_digest
@@ -30,6 +31,17 @@ def build_parser() -> argparse.ArgumentParser:
         "--include-seen",
         action="store_true",
         help="Include recent already-seen papers in the digest output.",
+    )
+    parser.add_argument(
+        "--deliver",
+        choices=("none", "telegram", "email", "both"),
+        default="none",
+        help="Optional delivery target after generating the digest.",
+    )
+    parser.add_argument(
+        "--subject",
+        default=None,
+        help="Optional email subject when using --deliver email or both.",
     )
     return parser
 
@@ -84,6 +96,13 @@ def main() -> None:
         args.output,
         include_seen=args.include_seen,
     )
+    if args.deliver != "none":
+        delivered = deliver_digest(
+            output_path,
+            channel=args.deliver,
+            subject=args.subject,
+        )
+        print(f"Delivered to: {', '.join(delivered)}", file=sys.stderr)
     print(output_path)
 
 

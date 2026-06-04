@@ -65,3 +65,13 @@ Focused positioning beats “all quant papers” early on.
 2. Publish markdown first.
 3. Add one delivery target, ideally email or Telegram.
 4. Only then add deeper extraction and retrieval.
+
+## Delivery Notes
+
+This repo now includes lightweight delivery hooks for:
+
+- Telegram bot delivery
+- SMTP email delivery
+
+Use them for internal distribution first, then add a stronger publication layer
+for public newsletter workflows.
