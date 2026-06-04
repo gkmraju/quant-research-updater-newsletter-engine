@@ -74,6 +74,14 @@ _HTML_TEMPLATE = Template(
         font-size: 14px;
         margin-bottom: 14px;
       }
+      .signature {
+        color: var(--muted);
+        font-size: 11px;
+        letter-spacing: 0.08em;
+        text-transform: lowercase;
+        margin-bottom: 14px;
+        font-family: Arial, sans-serif;
+      }
       .hero-grid {
         display: grid;
         grid-template-columns: 1.6fr 1fr;
@@ -197,6 +205,7 @@ _HTML_TEMPLATE = Template(
       <section class="hero">
         <div class="eyebrow">{{ brand_name }}</div>
         <h1>{{ title }}</h1>
+        <div class="signature">by twisted_arrow</div>
         <div class="subtitle">
           {{ issue_date }} · {{ mode_label }} · Curated by {{ signature_name }}
         </div>
