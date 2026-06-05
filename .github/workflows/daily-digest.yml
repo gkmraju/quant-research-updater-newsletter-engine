@@ -1,13 +1,25 @@
-name: Daily Digest
+name: Daily QuantNews Telegram PDF
 
 on:
-  schedule:
-    - cron: "0 12 * * *"
   workflow_dispatch:
+    inputs:
+      include_seen:
+        description: Include recently seen papers
+        required: false
+        default: "false"
+  schedule:
+    - cron: "0 7 * * *"
+      timezone: "Asia/Kolkata"
+
+permissions:
+  contents: read
 
 jobs:
-  build-digest:
-    runs-on: ubuntu-latest
+  build-and-deliver:
+    runs-on: windows-latest
+    concurrency:
+      group: quantnews-daily-pdf
+      cancel-in-progress: false
 
     steps:
       - name: Check out repository
@@ -18,12 +30,29 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Generate digest
+      - name: Install project
         run: |
-          python -m quant_update_bot.main --config config.example.json --output output/latest_digest.md
+          python -m pip install --upgrade pip
+          pip install -e .
 
-      - name: Upload digest artifact
+      - name: Generate and send digest
+        shell: bash
+        env:
+          QUANTNEWS_TELEGRAM_BOT_TOKEN: ${{ secrets.QUANTNEWS_TELEGRAM_BOT_TOKEN }}
+          QUANTNEWS_TELEGRAM_CHAT_ID: ${{ secrets.QUANTNEWS_TELEGRAM_CHAT_ID }}
+        run: |
+          args=(--config config.example.json --deliver telegram --publication both)
+          if [[ "${{ inputs.include_seen || 'false' }}" == "true" ]]; then
+            args+=(--include-seen)
+          fi
+          python -m quant_update_bot.main "${args[@]}"
+
+      - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: quantnews-digest
-          path: output/latest_digest.md
+          path: |
+            output/latest_digest.md
+            output/latest_digest.html
+            output/latest_digest.pdf
+          if-no-files-found: error
