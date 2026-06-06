@@ -229,6 +229,7 @@ _HTML_TEMPLATE = Template(
       </section>
 
       <div class="section-title">Top Reads</div>
+      {% if items %}
       {% for item in items %}
       <article class="card">
         <div class="rank">#{{ loop.index }} · Score {{ "%.2f"|format(item.score) }}</div>
@@ -259,6 +260,17 @@ _HTML_TEMPLATE = Template(
         </div>
       </article>
       {% endfor %}
+      {% else %}
+      <article class="card">
+        <h3>No fresh papers in this issue</h3>
+        <div class="lede">
+          The feed ran successfully, but nothing new cleared the configured filters for this edition.
+        </div>
+        <div class="mini">
+          Check the markdown digest for the exact run mode and upstream query warnings.
+        </div>
+      </article>
+      {% endif %}
 
       <div class="footer">
         Built with QuantNews Updater · {{ github_signature }}

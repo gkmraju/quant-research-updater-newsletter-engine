@@ -25,6 +25,16 @@ class RunArtifacts:
     publication: PublicationArtifacts | None
 
 
+@dataclass(slots=True)
+class FetchSummary:
+    """High-level status for the upstream query fetch phase."""
+
+    total_queries: int
+    successful_queries: int
+    failed_queries: int
+    errors: list[str]
+
+
 def build_parser() -> argparse.ArgumentParser:
     """Create the CLI parser."""
     parser = argparse.ArgumentParser(description=__doc__)
@@ -68,17 +78,32 @@ def run(
     output_path: str | None = None,
     *,
     include_seen: bool = False,
-) -> tuple[Path, list]:
+) -> tuple[Path, list, FetchSummary]:
     """Execute one digest run and return the output path."""
     config = AppConfig.from_file(config_path)
     papers = []
+    query_errors: list[str] = []
+    successful_queries = 0
     for index, query in enumerate(config.queries):
         if index:
             time.sleep(1)
         try:
             papers.extend(fetch_recent_papers(query))
+            successful_queries += 1
         except Exception as exc:
-            print(f"warning: query '{query.name}' failed: {exc}", file=sys.stderr)
+            error_text = f"query '{query.name}' failed: {exc}"
+            query_errors.append(error_text)
+            print(f"warning: {error_text}", file=sys.stderr)
+
+    fetch_summary = FetchSummary(
+        total_queries=len(config.queries),
+        successful_queries=successful_queries,
+        failed_queries=len(config.queries) - successful_queries,
+        errors=query_errors,
+    )
+    if fetch_summary.total_queries and fetch_summary.successful_queries == 0:
+        details = "; ".join(fetch_summary.errors) or "unknown upstream fetch failure"
+        raise RuntimeError(f"Digest generation aborted because all source queries failed: {details}")
 
     store = StateStore(config.state_db)
     stored = store.upsert_papers(papers)
@@ -101,7 +126,7 @@ def run(
         destination,
         include_seen=include_seen,
     )
-    return destination, digest_items
+    return destination, digest_items, fetch_summary
 
 
 def main() -> None:
@@ -109,7 +134,7 @@ def main() -> None:
     load_dotenv()
     parser = build_parser()
     args = parser.parse_args()
-    output_path, digest_items = run(
+    output_path, digest_items, fetch_summary = run(
         args.config,
         args.output,
         include_seen=args.include_seen,
@@ -139,6 +164,12 @@ def main() -> None:
             pdf_path=None if publication is None else publication.pdf_path,
         )
         print(f"Delivered to: {', '.join(delivered)}", file=sys.stderr)
+    if fetch_summary.failed_queries:
+        print(
+            "warning: completed with "
+            f"{fetch_summary.failed_queries}/{fetch_summary.total_queries} query failures",
+            file=sys.stderr,
+        )
     print(output_path)
 
 
