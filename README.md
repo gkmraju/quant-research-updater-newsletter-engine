@@ -128,7 +128,9 @@ Helpful supporting docs:
 
 This repo includes a scheduled workflow at
 [daily-digest.yml](/C:/Users/RAJU/Documents/QuantNews/.github/workflows/daily-digest.yml)
-that can generate a digest on a timer and upload it as an artifact.
+that runs every day at `7:00 AM IST` via an explicit `01:30 UTC` cron,
+renders the branded HTML/PDF newsletter, sends it to Telegram, and uploads the
+artifacts.
 
 ## Next Upgrades
 

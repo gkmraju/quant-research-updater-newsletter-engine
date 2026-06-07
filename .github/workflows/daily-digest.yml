@@ -8,8 +8,9 @@ on:
         required: false
         default: "false"
   schedule:
-    - cron: "0 7 * * *"
-      timezone: "Asia/Kolkata"
+    # GitHub Actions schedules can drift or ignore the timezone field in practice,
+    # so we pin this directly in UTC for a reliable 7:00 AM IST run.
+    - cron: "30 1 * * *"
 
 permissions:
   contents: read

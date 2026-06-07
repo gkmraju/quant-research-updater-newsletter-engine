@@ -5,13 +5,14 @@ description = "Quant research monitor and newsletter generator"
 readme = "README.md"
 requires-python = ">=3.11"
 license = "MIT"
-dependencies = []
+dependencies = [
+    "jinja2>=3.1",
+]
 authors = [
     { name = "RAJU" }
 ]
 keywords = ["quant", "arxiv", "newsletter", "research", "digest"]
 classifiers = [
-    "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
