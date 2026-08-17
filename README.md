@@ -37,6 +37,13 @@ finished “update us every day” product loop. This repo focuses on that loop:
 
 ## Quick Start
 
+Create an environment and install the project:
+
+```bash
+python -m venv .venv
+python -m pip install -e ".[dev]"
+```
+
 Generate a default digest:
 
 ```bash
@@ -62,7 +69,7 @@ python -m quant_update_bot.main --config config.example.json --deliver email --s
 ```
 
 Set delivery secrets with environment variables. A starter file is included at
-[.env.example](/C:/Users/RAJU/Documents/QuantNews/.env.example).
+[.env.example](.env.example).
 
 ## How it works
 
@@ -119,18 +126,28 @@ Suggested sections:
 
 Helpful supporting docs:
 
-- [newsletter-playbook.md](/C:/Users/RAJU/Documents/QuantNews/docs/newsletter-playbook.md)
-- [launch-pack.md](/C:/Users/RAJU/Documents/QuantNews/docs/launch-pack.md)
-- [quantmind-analysis.md](/C:/Users/RAJU/Documents/QuantNews/docs/quantmind-analysis.md)
-- [public-newsletter-template.md](/C:/Users/RAJU/Documents/QuantNews/templates/public-newsletter-template.md)
+- [newsletter-playbook.md](docs/newsletter-playbook.md)
+- [launch-pack.md](docs/launch-pack.md)
+- [quantmind-analysis.md](docs/quantmind-analysis.md)
+- [public-newsletter-template.md](templates/public-newsletter-template.md)
 
 ## GitHub Actions
 
 This repo includes a scheduled workflow at
-[daily-digest.yml](/C:/Users/RAJU/Documents/QuantNews/.github/workflows/daily-digest.yml)
+[daily-digest.yml](.github/workflows/daily-digest.yml)
 that runs every day at `7:00 AM IST` via an explicit `01:30 UTC` cron,
 renders the branded HTML/PDF newsletter, sends it to Telegram, and uploads the
 artifacts.
+
+Pull requests are checked by a separate CI workflow that runs the unit tests,
+Ruff, and bytecode compilation on Python 3.11 and 3.13. Run the same checks
+locally with:
+
+```bash
+python -m unittest discover -s tests -v
+ruff check .
+python -m compileall -q quant_update_bot tests
+```
 
 ## Next Upgrades
 
