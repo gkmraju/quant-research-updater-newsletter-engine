@@ -21,9 +21,14 @@ class RankedPaper:
     topics: list[str]
 
 
-def rank_papers(items: list[StoredPaper], config: AppConfig) -> list[RankedPaper]:
+def rank_papers(
+    items: list[StoredPaper],
+    config: AppConfig,
+    *,
+    now: datetime | None = None,
+) -> list[RankedPaper]:
     """Score papers by freshness and keyword density."""
-    now = datetime.now(UTC)
+    now = now or datetime.now(UTC)
     query_weights = {query.name: query.weight for query in config.queries}
     ranked: list[RankedPaper] = []
     for item in items:
@@ -50,9 +55,10 @@ def select_digest_items(
     limit: int,
     *,
     include_seen: bool,
+    now: datetime | None = None,
 ) -> list[RankedPaper]:
     """Keep recent papers inside the lookback window."""
-    cutoff = datetime.now(UTC) - timedelta(days=lookback_days)
+    cutoff = (now or datetime.now(UTC)) - timedelta(days=lookback_days)
     recent = [
         item
         for item in items
@@ -68,14 +74,16 @@ def write_digest(
     destination: Path,
     *,
     include_seen: bool,
+    generated_at: datetime | None = None,
 ) -> None:
     """Render a markdown digest to disk."""
     destination.parent.mkdir(parents=True, exist_ok=True)
     mode_label = "recent papers" if include_seen else "new papers"
+    timestamp = (generated_at or datetime.now(UTC)).strftime("%Y-%m-%d %H:%M UTC")
     lines = [
         "# Quant Research Digest",
         "",
-        f"Generated at {datetime.now(UTC).strftime('%Y-%m-%d %H:%M UTC')}",
+        f"Generated at {timestamp}",
         f"Digest mode: {mode_label}",
         "",
     ]
